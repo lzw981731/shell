@@ -10,12 +10,12 @@ apt-get install wget gcc gcc-c++ libffi-devel zlib-devel
 	#下载源码
 	wget http://pan.vipkj.net/%E5%8D%95%E6%9C%BA%E6%B8%B8%E6%88%8F/%E8%AF%9B%E4%BB%99/16%E7%BA%AF%E7%AB%AF/zx.tar.gz
 	#解压
-	tar -xvJf zx.tar.gz
+	tar   -zxvf zx.tar.gz
 	#清理工作
-	cd/root
+	cd /root
 	rm -rf zx.tar.gz
   #启动游戏服务器
-  cd/root
+  cd /root
   ./start
  #启动完成
 	echo "------------------------------------------------"
