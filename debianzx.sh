@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#####		CentOS 7一键安装Python 3		#####
-#####		作者：xiaoz.me					#####
-#####		更新时间：2018-07-20			#####
+#####		debian/CentOS 一键安装诛仙		#####
+#####		作者：vipkj.net					#####
+#####		更新时间：2019-04-20			#####
 #安装依赖
 function rely(){
 apt-get install wget gcc gcc-c++ libffi-devel zlib-devel
