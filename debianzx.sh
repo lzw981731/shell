@@ -8,7 +8,7 @@ function rely(){
 apt-get install wget gcc gcc-c++ libffi-devel zlib-devel
 }
 	#下载源码
-	wget http://pan.vipkj.net/%E5%8D%95%E6%9C%BA%E6%B8%B8%E6%88%8F/%E8%AF%9B%E4%BB%99/16%E7%BA%AF%E7%AB%AF/zx.tar.gz
+	wget http://pan.vipkj.net/%E5%8D%95%E6%9C%BA%E6%B8%B8%E6%88%8F/%E8%AF%9B%E4%BB%99/%E6%9C%8D%E5%8A%A1%E7%AB%AF/16%E7%BA%AF%E7%AB%AF/zx.tar.gz
 	#解压
 	tar   -zxvf zx.tar.gz
 	#清理工作
