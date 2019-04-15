@@ -23,13 +23,12 @@ apt-get install wget gcc gcc-c++ libffi-devel zlib-devel
 	echo "------------------------------------------------"
 }
 
-###卸载Python 3
+###卸载诛仙3
 function uninstall(){
-	rm -rf /usr/local/python3
-	rm -rf /usr/bin/python3
-	rm -rf /usr/bin/pip3
+	rm -rf /root/zxserver
+	rm -rf /root/zx.tar.gz
 	echo "------------------------------------------------"
-	echo '|	Python 3已卸载！				 |'	
+	echo '诛仙 3已卸载！				 |'	
 	echo "------------------------------------------------"
 }
 
