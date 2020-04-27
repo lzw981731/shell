@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #####		CentOS 7一键安装Python 3		#####
-#####		作者：xiaoz.me					#####
-#####		更新时间：2018-07-20			#####
+#####		作者：vipkj.net					#####
+#####		更新时间：2020-07-20			#####
 
 #导入环境变量
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
@@ -18,7 +18,7 @@ function install_py37(){
 	#调用安装依赖函数
 	rely
 	#下载源码
-	wget http://soft.xiaoz.org/python/Python-3.7.0.tar.xz
+	wget https://raw.githubusercontent.com/lzw981731/shell/master/Python-3.7.0.tar.xz
 	#解压
 	tar -xvJf Python-3.7.0.tar.xz
 	cd Python-3.7.0
