@@ -2,3 +2,4 @@
 export FRPS_VER=0.33.0
 export FRPS_INIT="https://dl-web.dropbox.com/s/pthyz8ha817943o/frps.init"
 export github_download_url="https://github.com/lzw981731/frp/releases/download"
+export aliyun_download_url="https://code.aliyun.com/clangcn/frp/raw/master"
