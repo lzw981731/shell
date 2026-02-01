@@ -1,4 +1,3 @@
-cat << 'EOF' > fnOSNAS-Tracker.sh
 #!/bin/bash
 # =================================================================
 # 项目名称: 飞牛 (fnOS) 下载中心 Tracker 自动维护工具
@@ -160,5 +159,3 @@ case $choice in
         do_update
         ;;
 esac
-EOF
-chmod +x fnOSNAS-Tracker.sh
