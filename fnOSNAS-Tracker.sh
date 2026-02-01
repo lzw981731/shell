@@ -1,33 +1,34 @@
+cat << 'EOF' > fnOSNAS-Tracker.sh
 #!/bin/bash
 # =================================================================
-# Project: fnOS / Debian Tracker Updater
-# Description: Automatically update BitTorrent trackers for dlcenter
-# Author: vipkj.net 
+# 项目名称: 飞牛 (fnOS) 下载中心 Tracker 自动维护工具
+# 适配系统: Debian / fnOS
+# 功能描述: 自动抓取最新 Tracker 并注入 dlcenter 数据库
 # =================================================================
 
-# 强制将当前脚本可能存在的 \r 去除（自愈逻辑）
-# This script is optimized for Linux (LF).
+# 自动修复换行符带来的干扰 (Self-Healing)
+# 
 
-# ================== 1. 权限与环境检查 ==================
+# ================== 1. 环境检查 ==================
 if [ "$(id -u)" -ne 0 ]; then
-  echo "Error: This script must be run as root!" >&2
+  echo "❌ 错误：必须以 root 权限运行此脚本！请使用 'sudo -i' 切换身份。" >&2
   exit 1
 fi
 
-# 检查并安装依赖 (fnOS / Debian 专用)
+# 安装必要依赖
 for cmd in sqlite3 curl; do
     if ! command -v $cmd &> /dev/null; then
-        echo "Installing $cmd..."
+        echo "正在安装必要组件 $cmd ..."
         apt-get update && apt-get install -y $cmd
     fi
 done
 
-# ================== 2. 配置项 (Configuration) ==================
+# ================== 2. 配置项 ==================
 DB_DIR="/usr/trim/var/downloadcenter"
 DB_FILE="downloadcenter.db"
 MY_UID=1000  # 飞牛默认下载用户 UID
 
-# Tracker 来源 (可根据需要增加)
+# Tracker 订阅源
 URLS=(
   "https://trackerslist.com/best.txt"
   "https://ngosang.github.io/trackerslist/trackers_all.txt"
@@ -41,36 +42,41 @@ SCRIPT_PATH=$(realpath "$0")
 
 # ================== 3. 核心功能函数 ==================
 
-# 执行更新逻辑
+# 执行 Tracker 更新
 do_update() {
     if [ ! -d "$DB_DIR" ]; then
-        echo "Error: Directory $DB_DIR not found."
+        echo "❌ 错误: 找不到数据库目录 $DB_DIR"
         exit 1
     fi
     cd "$DB_DIR" || exit 1
 
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Tracker Update..."
+    echo "------------------------------------------"
+    echo "📅 [$(date '+%Y-%m-%d %H:%M:%S')] 开始更新流程..."
+    echo "------------------------------------------"
     
-    # 停止服务
+    # 停止服务以防止数据库死锁
+    echo "⏱️ 正在停止下载服务 (dlcenter)..."
     systemctl stop dlcenter
 
-    # 获取当前最大 ID
+    # 获取 ID 计数器
     LAST_ID=$(sqlite3 "$DB_FILE" "SELECT MAX(ID) FROM USER_TRACKERS;")
     CURRENT_ID=${LAST_ID:-0}
     ((CURRENT_ID++))
 
     # 清理旧数据
+    echo "🧹 正在清理旧 Tracker 数据..."
     sqlite3 "$DB_FILE" "DELETE FROM USER_TRACKERS;"
     
     # 内存去重缓存
     declare -A seen_trackers
 
     for url in "${URLS[@]}"; do
-        echo "Fetching: $url"
+        echo "🌐 正在获取: $url"
+        # 抓取并强制去除 \r
         response=$(curl -sLk --max-time "$CURL_TIMEOUT" "$url" | tr -d '\r')
         [ -z "$response" ] && continue
 
-        # 提取并过滤有效 Tracker
+        # 过滤合法格式并限制长度
         valid_list=$(echo "$response" | grep -Eo "(udp|http|https|wss|ws)://[^'\"<>]+" | cut -c -"$TRACKER_MAX_LENGTH")
 
         current_batch=0
@@ -102,42 +108,57 @@ do_update() {
     done
 
     # 启动服务
+    echo "🚀 正在重启下载服务 (dlcenter)..."
     systemctl start dlcenter
-    echo "[SUCCESS] All trackers updated and service restarted."
+    echo "✅ [完成] Tracker 注入成功，服务已恢复正常。"
 }
 
-# 设置定时任务
+# 自动设置 Cron 定时任务
 set_cron() {
+    # 移除已有的重复任务并添加新任务
     (crontab -l 2>/dev/null | grep -v "$SCRIPT_PATH"; echo "0 3 * * * $SCRIPT_PATH --auto") | crontab -
-    echo "Cron job set: Automatically update at 03:00 AM every day."
+    echo "✅ [成功] 已设置定时任务：每天凌晨 03:00 自动执行更新。"
 }
 
-# ================== 4. 交互菜单 (Menu) ==================
+# ================== 4. 交互菜单 ==================
 
-# 自动运行模式 (用于 Cron)
+# 检查是否为定时任务调用的自动模式
 if [ "$1" == "--auto" ]; then
     do_update
     exit 0
 fi
 
-echo "------------------------------------------"
-echo "   fnOS/Debian Download Center Tool"
-echo "------------------------------------------"
-echo "1) Run Tracker Update Now"
-echo "2) Schedule Daily Update (03:00 AM)"
-echo "3) Exit"
-echo "------------------------------------------"
+clear
+echo "=========================================="
+echo "      飞牛 (fnOS) 下载中心维护工具"
+echo "=========================================="
+echo " 1) 🚀 立即运行 Tracker 更新"
+echo " 2) ⏰ 设置每天凌晨 3 点自动更新"
+echo " 3) ❌ 退出脚本"
+echo "=========================================="
+echo "💡 提示：若 3 分钟内无操作，将自动运行功能 1。"
 
-read -t 180 -p "Select an option [1-3] (Default 1): " choice
+# 使用 read 捕获超时
+read -t 180 -p "请输入选项 [1-3] (默认 1): " choice
 
-if [ -z "$choice" ]; then
-    echo -e "\nNo input detected for 3 mins, running update..."
-    choice=1
-fi
+# 处理默认选项
+choice=${choice:-1}
 
 case $choice in
-    1) do_update ;;
-    2) set_cron ;;
-    3) exit 0 ;;
-    *) echo "Invalid option."; exit 1 ;;
+    1)
+        do_update
+        ;;
+    2)
+        set_cron
+        ;;
+    3)
+        echo "👋 已退出。"
+        exit 0
+        ;;
+    *)
+        echo "⚠️ 输入无效，正在执行默认更新..."
+        do_update
+        ;;
 esac
+EOF
+chmod +x fnOSNAS-Tracker.sh
