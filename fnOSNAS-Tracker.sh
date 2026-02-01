@@ -5,9 +5,6 @@
 # 功能描述: 自动抓取最新 Tracker 并注入 dlcenter 数据库
 # =================================================================
 
-# 自动修复换行符带来的干扰 (Self-Healing)
-# 
-
 # ================== 1. 环境检查 ==================
 if [ "$(id -u)" -ne 0 ]; then
   echo "❌ 错误：必须以 root 权限运行此脚本！请使用 'sudo -i' 切换身份。" >&2
@@ -71,7 +68,7 @@ do_update() {
 
     for url in "${URLS[@]}"; do
         echo "🌐 正在获取: $url"
-        # 抓取并强制去除 \r
+        # 抓取并强制去除 \r (针对下载的内容)
         response=$(curl -sLk --max-time "$CURL_TIMEOUT" "$url" | tr -d '\r')
         [ -z "$response" ] && continue
 
