@@ -12,6 +12,8 @@
 # game       → 游戏规则
 ROUTE_RULE="youtube"
 
+SKIP_NODES="uh8FiBR1"                 # 不参与测速和切换的节点 (空格分隔)
+
 MAX_LOSS=50                           # 丢包超过此值不参与评分 (%)
 PING_COUNT=5
 PING_TIMEOUT=2
@@ -116,11 +118,16 @@ cleanup() {
 # ============================================================
 trap cleanup EXIT
 
-# 自动发现所有节点 (排除 examplenode, rulenode)
+# 自动发现所有节点
 ALL_NODES=$(uci show passwall2 2>/dev/null | grep '=nodes' | \
     sed 's/passwall2\.\(.*\)=nodes/\1/' | \
-    grep -v '^examplenode$' | grep -v '^rulenode$' | \
-    tr '\n' ' ')
+    grep -v '^examplenode$' | grep -v '^rulenode$')
+
+# 排除配置区指定的节点
+for skip in $SKIP_NODES; do
+    ALL_NODES=$(echo "$ALL_NODES" | grep -v "^${skip}$")
+done
+ALL_NODES=$(echo "$ALL_NODES" | tr '\n' ' ')
 log "发现节点: $ALL_NODES"
 
 # 防重复执行
