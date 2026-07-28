@@ -12,7 +12,7 @@
 # game       → 游戏规则
 ROUTE_RULE="youtube"
 
-SKIP_NODES="JPV6 home.hk.981731.xyz"    # 不参与测速和切换 (支持节点ID/名称/IP/域名, 空格分隔)
+SKIP_NODES="JPV6,home.hk.981731.xyz" # 不参与测速和切换 (支持节点ID/名称/IP/域名, 逗号或空格分隔)
 
 MAX_LOSS=50                           # 丢包超过此值不参与评分 (%)
 PING_COUNT=5
@@ -143,6 +143,8 @@ resolve_skip() {
     echo "$matched"
 }
 
+# 逗号转空格, 然后逐个匹配跳过
+SKIP_NODES=$(echo "$SKIP_NODES" | tr ',' ' ')
 for pattern in $SKIP_NODES; do
     matched=$(resolve_skip "$pattern")
     for node in $matched; do
