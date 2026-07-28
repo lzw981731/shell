@@ -17,8 +17,8 @@ SKIP_NODES=""                         # 不参与测速和切换 (支持节点ID
 MAX_LOSS=50                           # 丢包超过此值不参与评分 (%)
 PING_COUNT=5
 PING_TIMEOUT=2
-TEST_URL="https://speed.cloudflare.com/__down?bytes=10485760"  # 10MB (测速更准, 低于682KB/s的超时跳过)
-SPEED_TIMEOUT=15
+TEST_URL="https://speed.cloudflare.com/__down?bytes=10485760"  # 10MB
+SPEED_TIMEOUT=120                     # 单次测速超时 (秒), 10MB/120s ≈ 85KB/s以上的节点都能跑完
 LOG_FILE="/tmp/node_monitor.log"
 LOG_HISTORY="/tmp/node_monitor_history.log"
 LOCK_FILE="/tmp/node_monitor.lock"
@@ -167,9 +167,9 @@ if [ -f "$LOCK_FILE" ]; then
 fi
 echo "$$" > "$LOCK_FILE"
 
-# 总超时保护 (5分钟自动退出)
+# 总超时保护 (15分钟强制退出)
 GUARD_PID=""
-(sleep 300 && [ -f "$LOCK_FILE" ] && kill -9 $(cat "$LOCK_FILE" 2>/dev/null) 2>/dev/null) &
+(sleep 900 && [ -f "$LOCK_FILE" ] && kill -9 $(cat "$LOCK_FILE" 2>/dev/null) 2>/dev/null) &
 GUARD_PID=$!
 
 # 先清理上次残留 (只杀测试进程)
