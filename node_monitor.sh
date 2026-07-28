@@ -17,7 +17,7 @@ SKIP_NODES=""                         # 不参与测速和切换 (支持节点ID
 MAX_LOSS=50                           # 丢包超过此值不参与评分 (%)
 PING_COUNT=5
 PING_TIMEOUT=2
-TEST_URL="https://speed.cloudflare.com/__down?bytes=5242880"  # 5MB (1MB 对快节点瞬间下完, 测速不准)
+TEST_URL="https://speed.cloudflare.com/__down?bytes=10485760"  # 10MB (测速更准, 低于682KB/s的超时跳过)
 SPEED_TIMEOUT=15
 LOG_FILE="/tmp/node_monitor.log"
 LOG_HISTORY="/tmp/node_monitor_history.log"
