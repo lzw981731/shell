@@ -12,7 +12,7 @@
 # game       → 游戏规则
 ROUTE_RULE="youtube"
 
-SKIP_NODES="uh8FiBR1"                 # 不参与测速和切换的节点 (空格分隔)
+SKIP_NODES="JPV6 home.hk.981731.xyz"    # 不参与测速和切换 (支持节点ID/名称/IP/域名, 空格分隔)
 
 MAX_LOSS=50                           # 丢包超过此值不参与评分 (%)
 PING_COUNT=5
@@ -123,9 +123,33 @@ ALL_NODES=$(uci show passwall2 2>/dev/null | grep '=nodes' | \
     sed 's/passwall2\.\(.*\)=nodes/\1/' | \
     grep -v '^examplenode$' | grep -v '^rulenode$')
 
-# 排除配置区指定的节点
-for skip in $SKIP_NODES; do
-    ALL_NODES=$(echo "$ALL_NODES" | grep -v "^${skip}$")
+# 排除配置区指定的节点 (支持 ID/名称/地址 模糊匹配)
+resolve_skip() {
+    local pattern="$1"
+    local matched=""
+    for node in $ALL_NODES; do
+        # 匹配节点ID
+        [ "$node" = "$pattern" ] && { matched="$matched $node"; continue; }
+        # 匹配备注名 (remarks)
+        local remark=$(uci get passwall2.$node.remarks 2>/dev/null)
+        [ "$remark" = "$pattern" ] && { matched="$matched $node"; continue; }
+        # 匹配地址 (address)
+        local addr=$(uci get passwall2.$node.address 2>/dev/null)
+        [ "$addr" = "$pattern" ] && { matched="$matched $node"; continue; }
+        # 模糊匹配 (pattern 是 remark 或 address 的子串)
+        echo "$remark" | grep -qi "$pattern" && { matched="$matched $node"; continue; }
+        echo "$addr" | grep -qi "$pattern" && { matched="$matched $node"; continue; }
+    done
+    echo "$matched"
+}
+
+for pattern in $SKIP_NODES; do
+    matched=$(resolve_skip "$pattern")
+    for node in $matched; do
+        remark=$(uci get passwall2.$node.remarks 2>/dev/null)
+        log "跳过节点: $remark ($node)"
+        ALL_NODES=$(echo "$ALL_NODES" | grep -v "^${node}$")
+    done
 done
 ALL_NODES=$(echo "$ALL_NODES" | tr '\n' ' ')
 log "发现节点: $ALL_NODES"
