@@ -309,5 +309,5 @@ log ">>> 切换完成"
 
 # 记录切换历史 (保留20行)
 echo "$(date '+%Y-%m-%d %H:%M:%S') $ROUTE_RULE 切换至: $BEST_REMARK" >> "$LOG_HISTORY"
-local lines=$(wc -l < "$LOG_HISTORY" 2>/dev/null || echo 0)
+lines=$(wc -l < "$LOG_HISTORY" 2>/dev/null || echo 0)
 [ "$lines" -gt 20 ] && sed -i "1,$((lines - 20))d" "$LOG_HISTORY" 2>/dev/null
