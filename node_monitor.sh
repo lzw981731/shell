@@ -18,7 +18,7 @@ MAX_LOSS=50                           # 丢包超过此值不参与评分 (%)
 PING_COUNT=5
 PING_TIMEOUT=2
 TEST_URL="https://speed.cloudflare.com/__down?bytes=10485760"  # 10MB
-SPEED_TIMEOUT=120                     # 单次测速超时 (秒), 10MB/120s ≈ 85KB/s以上的节点都能跑完
+SPEED_TIMEOUT=60                      # 单次测速超时 (秒), 10MB/60s ≈ 170KB/s能完整跑完, 慢的按已下载数据算
 LOG_FILE="/tmp/node_monitor.log"
 LOG_HISTORY="/tmp/node_monitor_history.log"
 LOCK_FILE="/tmp/node_monitor.lock"
